@@ -1,0 +1,125 @@
+#!/bin/bash
+
+##
+# Author: Alex Kulikov <alex.kulikov@xing.com>
+# Version: 0.1
+# Description: Automated mass optimization script for web images.
+#
+# Credits:
+# - pngcrush by Glenn Randers-Pehrson (http://pmt.sourceforge.net/pngcrush)
+# - OptiPNG by Cosmin Truta (http://optipng.sourceforge.net)
+# - pngout by Ken Silverman (http://advsys.net/ken/utils.htm)
+# - advpng by Andrea Mazzoleni (http://advancemame.sourceforge.net/comp-readme.html)
+##
+
+# Global Vars
+TARGET=${1%/}
+TOTALFILES=0
+LOGFILE="/tmp/tinypng.log"
+
+# Colors
+ESC_SEQ="\x1b["
+COL_RESET=$ESC_SEQ"39;49;00m"
+COL_RED=$ESC_SEQ"31;01m"
+COL_GREEN=$ESC_SEQ"32;01m"
+COL_CYAN=$ESC_SEQ"36;01m"
+
+#Make Bakup
+function backup(){
+  date=`date "+%y%m%d_%H%M%S"`
+  PWD=`pwd`
+  path=$PWD/$TARGET
+  tar czf /tmp/tinypng_$date.tar.gz $path
+}
+
+#Count PNGs in targeted folder
+function count() {
+  for x in $(find $TARGET -type f -name '*.png'); do
+  TOTALFILES=$(($TOTALFILES+1))
+  done  
+}
+
+#find all PNGs in folder and crush there
+function crushdir() {
+  #Counter Vars
+  totalstart=0
+  totalend=0
+  position=0
+  #Seperator in Logfile
+  echo "====================" $date "====================
+  " >> /tmp/tinypng.log
+  #Go!
+  for x in $(find $TARGET -type f -name '*.png'); do
+    position=$(($position+1))
+    percentdone=$(($position*100/$TOTALFILES))
+    clear
+    echo "["$position/$TOTALFILES"] ("$percentdone "%)"
+    count=0
+    if [ -f "$LOGFILE" ]
+      then
+      tail -n 1 $LOGFILE
+    fi
+    let start=`ls -l $x | tr -s " " | cut -d " " -f 5`
+    totalstart=$(($totalstart+$start))
+    #DO IT!
+    crunshPNG $x
+    let end=`ls -l pngout.png | tr -s " " | cut -d " " -f 5`
+    totalend=$(($totalend+$end))
+    rm $x
+    mv pngout.png $x
+    sum=$(($start-$end))
+    percent=$(($sum*100/$start))
+    echo $x "Saved:" $sum "Bytes ("$percent "%)" >> /tmp/tinypng.log
+  done
+    totalsum=$(($totalstart-$totalend))
+    totalpercent=$(($totalsum*100/$totalstart))
+    echo "Total Saved:" $(($totalsum/1024)) "KByte ("$totalsum "Byte) ("$totalpercent"%)" >> /tmp/tinypng.log
+    echo -ne '\n'
+    echo -e $COL_CYAN"Total Saved:" $(($totalsum/1024)) "KByte ("$totalsum "Byte) ("$totalpercent"%)"$COL_RESET
+    echo "Backup: /tmp/"$date".tar.gz" >> /tmp/tinypng.log
+}
+
+function crushfile() {
+  let start=`ls -l $TARGET | tr -s " " | cut -d " " -f 5`
+  crunshPNG $TARGET
+  let end=`ls -l pngout.png | tr -s " " | cut -d " " -f 5`
+  rm $TARGET
+  mv pngout.png $TARGET
+  sum=$(($start-$end))
+  percent=$(($sum*100/$start))
+  echo $TARGET "Saved:" $sum "Bytes ("$percent "%)"
+  echo $TARGET "Saved:" $sum "Bytes ("$percent "%)" >> /tmp/tinypng.log
+  echo "Backup: /tmp/"$date".tar.gz" >> /tmp/tinypng.log
+}
+
+function crunshPNG() {
+  pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -max -reduce -m 0 -q $1
+  optipng -o7 -q pngout.png
+  pngout pngout.png -q -y -k0 -s0
+  advpng -z -4 pngout.png > /dev/null
+}
+
+
+# Is target a file or a directory
+function conditions() {
+  if [ -d "$TARGET" ]
+  then
+    backup
+    count
+    crushdir
+  fi
+  if [ -f "$TARGET" ]
+  then
+    backup
+    crushfile
+  fi
+}
+
+if [ -w "$TARGET" ]
+then
+  conditions
+else 
+  echo -e $COL_RED"No write rights or wrong targed!"$COL_RESET
+fi
+
+exit 0
