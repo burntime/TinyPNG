@@ -19,13 +19,15 @@ function instDarwin ()
     then
       echo "You need Mac-Ports. (http://www.macports.org)"
     else
+      mv README README.bak
       curl http://static.jonof.id.au/dl/kenutils/pngout-20070430-darwin.tar.gz > pngout.tar.gz
       tar -xzvf pngout.tar.gz
       rm README
       rm pngout.tar.gz
       sudo mv pngout-darwin /usr/bin/pngout
-      sudo mv tinypng /usr/bin/tinypng
+      sudo cp tinypng /usr/bin/tinypng
       sudo port install pngcrush AdvanceCOMP optipng
+      mv README.bak README
       echo "done."
   fi
 }
@@ -36,6 +38,7 @@ function instLinux ()
     then
       echo "apt-get not avaible!"
     else
+      mv README README.bak
       curl http://static.jonof.id.au/dl/kenutils/pngout-20070430-linux.tar.gz > pngout.tar.gz
       tar -xzvf pngout.tar.gz
       echo "Choose your processor architecture."
@@ -57,6 +60,8 @@ function instLinux ()
       rm pngout-linux-i686
       rm pngout-linux-pentium4
       sudo apt-get install pngcrush AdvanceCOMP optipng
+      sudo cp tinypng /usr/bin/tinypng
+      mv README.bak README
       echo "done."
   fi
 }

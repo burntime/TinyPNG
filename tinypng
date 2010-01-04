@@ -46,19 +46,13 @@ function crushdir() {
   totalend=0
   position=0
   #Seperator in Logfile
-  echo "====================" $date "====================
-  " >> /tmp/tinypng.log
-  #Go!
+  echo "====================" $date "====================" >> /tmp/tinypng.log
+  
   for x in $(find $TARGET -type f -name '*.png'); do
     position=$(($position+1))
     percentdone=$(($position*100/$TOTALFILES))
-    clear
-    echo "["$position/$TOTALFILES"] ("$percentdone "%)"
+    echo -ne "["$position/$TOTALFILES"] ("$percentdone "%) >> "$x
     count=0
-    if [ -f "$LOGFILE" ]
-      then
-      tail -n 1 $LOGFILE
-    fi
     let start=`ls -l $x | tr -s " " | cut -d " " -f 5`
     totalstart=$(($totalstart+$start))
     #DO IT!
@@ -70,6 +64,7 @@ function crushdir() {
     sum=$(($start-$end))
     percent=$(($sum*100/$start))
     echo $x "Saved:" $sum "Bytes ("$percent "%)" >> /tmp/tinypng.log
+    echo "  >> Saved:" $sum "Bytes ("$percent "%)"
   done
     totalsum=$(($totalstart-$totalend))
     totalpercent=$(($totalsum*100/$totalstart))
