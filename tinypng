@@ -2,7 +2,7 @@
 
 ##
 # Author: Alex Kulikov <alex.kulikov@xing.com>
-# Version: 0.1
+# Version: 0.2
 # Description: Automated mass optimization script for web images.
 #
 # Credits:
@@ -16,6 +16,11 @@
 TARGET=${1%/}
 TOTALFILES=0
 LOGFILE="/tmp/tinypng.log"
+ERRORLOG="/tmp/tinypng_error.log"
+DATE=`date "+%y%m%d_%H%M%S"`
+BACKUP="/tmp/tinypng_"$DATE
+PWD=`pwd`
+path=$PWD/$TARGET
 
 # Colors
 ESC_SEQ="\x1b["
@@ -24,16 +29,23 @@ COL_RED=$ESC_SEQ"31;01m"
 COL_GREEN=$ESC_SEQ"32;01m"
 COL_CYAN=$ESC_SEQ"36;01m"
 
-#Make Bakup
-function backup(){
-  date=`date "+%y%m%d_%H%M%S"`
-  PWD=`pwd`
-  path=$PWD/$TARGET
-  tar czf /tmp/tinypng_$date.tar.gz $path
+#Copy original files
+function copy() {
+  echo "tinypng: Make backup copy"
+  mkdir $BACKUP
+  cp -r $path $BACKUP
+}
+
+#Compress orgininal copy
+function backup() {
+  echo "tinypng: Compress backup"
+  tar czf /tmp/tinypng_$DATE.tar.gz /tmp/tinypng_$DATE
+  rm -r /tmp/tinypng_$DATE/
 }
 
 #Count PNGs in targeted folder
 function count() {
+  echo "tinypng: Count files"
   for x in $(find $TARGET -type f -name '*.png'); do
   TOTALFILES=$(($TOTALFILES+1))
   done  
@@ -41,12 +53,13 @@ function count() {
 
 #find all PNGs in folder and crush there
 function crushdir() {
+  echo "tinypng: Crush directory"
   #Counter Vars
   totalstart=0
   totalend=0
   position=0
   #Seperator in Logfile
-  echo "====================" $date "====================" >> /tmp/tinypng.log
+  echo "====================" $DATE "====================" >> $LOGFILE
   
   for x in $(find $TARGET -type f -name '*.png'); do
     position=$(($position+1))
@@ -55,26 +68,36 @@ function crushdir() {
     count=0
     let start=`ls -l $x | tr -s " " | cut -d " " -f 5`
     totalstart=$(($totalstart+$start))
-    #DO IT!
+
     crunshPNG $x
+
     let end=`ls -l pngout.png | tr -s " " | cut -d " " -f 5`
     totalend=$(($totalend+$end))
     rm $x
     mv pngout.png $x
     sum=$(($start-$end))
     percent=$(($sum*100/$start))
-    echo $x "Saved:" $sum "Bytes ("$percent "%)" >> /tmp/tinypng.log
-    echo "  >> Saved:" $sum "Bytes ("$percent "%)"
+    wrongsize=$(($sum<0))
+    if [[ $wrongsize -eq 1 ]] ; then
+         echo -e $COL_RED"ERROR: "$x" seems to be broken"$COL_RESET
+         echo "ERROR: "$x" seems to be broken" >> $ERRORLOG
+         cp $BACKUP/$x $path/
+         echo ">> "$x" Restored from Backup."
+    else
+         echo $x "Saved:" $sum "Bytes ("$percent "%)" >> $LOGFILE
+         echo "  >> Saved:" $sum "Bytes ("$percent "%)"
+    fi
   done
     totalsum=$(($totalstart-$totalend))
     totalpercent=$(($totalsum*100/$totalstart))
-    echo "Total Saved:" $(($totalsum/1024)) "KByte ("$totalsum "Byte) ("$totalpercent"%)" >> /tmp/tinypng.log
+    echo "Total Saved:" $(($totalsum/1024)) "KByte ("$totalsum "Byte) ("$totalpercent"%)" >> $LOGFILE
     echo -ne '\n'
     echo -e $COL_CYAN"Total Saved:" $(($totalsum/1024)) "KByte ("$totalsum "Byte) ("$totalpercent"%)"$COL_RESET
-    echo "Backup: /tmp/"$date".tar.gz" >> /tmp/tinypng.log
+    echo "Backup: /tmp/"$DATE".tar.gz" >> $LOGFILE
 }
 
 function crushfile() {
+  echo "tinypng: Crush file"
   let start=`ls -l $TARGET | tr -s " " | cut -d " " -f 5`
   crunshPNG $TARGET
   let end=`ls -l pngout.png | tr -s " " | cut -d " " -f 5`
@@ -83,8 +106,8 @@ function crushfile() {
   sum=$(($start-$end))
   percent=$(($sum*100/$start))
   echo $TARGET "Saved:" $sum "Bytes ("$percent "%)"
-  echo $TARGET "Saved:" $sum "Bytes ("$percent "%)" >> /tmp/tinypng.log
-  echo "Backup: /tmp/"$date".tar.gz" >> /tmp/tinypng.log
+  echo $TARGET "Saved:" $sum "Bytes ("$percent "%)" >> $LOGFILE
+  echo "Backup: /tmp/"$DATE".tar.gz" >> $LOGFILE
 }
 
 function crunshPNG() {
@@ -99,14 +122,16 @@ function crunshPNG() {
 function conditions() {
   if [ -d "$TARGET" ]
   then
-    backup
+    copy
     count
     crushdir
+    backup
   fi
   if [ -f "$TARGET" ]
   then
-    backup
+    copy
     crushfile
+    backup
   fi
 }
 

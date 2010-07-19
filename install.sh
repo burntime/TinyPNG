@@ -26,6 +26,7 @@ function instDarwin ()
       rm pngout.tar.gz
       sudo mv pngout-darwin /usr/bin/pngout
       sudo cp tinypng /usr/bin/tinypng
+      sudo chmod 755 /usr/bin/tinypng
       sudo port install pngcrush AdvanceCOMP optipng
       mv README.bak README
       echo "done."
