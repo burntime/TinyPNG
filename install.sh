@@ -60,7 +60,7 @@ function instLinux ()
       rm pngout-linux-i386
       rm pngout-linux-i686
       rm pngout-linux-pentium4
-      sudo apt-get install pngcrush AdvanceCOMP optipng
+      sudo apt-get install pngcrush advancecomp optipng
       sudo cp tinypng /usr/bin/tinypng
       mv README.bak README
       echo "done."
