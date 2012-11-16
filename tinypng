@@ -39,14 +39,14 @@ function copy() {
 #Compress orgininal copy
 function backup() {
   echo "tinypng: Compress backup"
-  tar czf /tmp/tinypng_$DATE.tar.gz /tmp/tinypng_$DATE
+  tar czf /tmp/tinypng_$DATE.tar.gz /tmp/tinypng_$DATE  2> /dev/null
   rm -r /tmp/tinypng_$DATE/
 }
 
 #Count PNGs in targeted folder
 function count() {
   echo "tinypng: Count files"
-  for x in $(find $TARGET -type f -name '*.png'); do
+  for x in $(find $TARGET -type f -name '*.png' ! -name '._*' ); do
   TOTALFILES=$(($TOTALFILES+1))
   done  
 }
@@ -61,7 +61,7 @@ function crushdir() {
   #Seperator in Logfile
   echo "====================" $DATE "====================" >> $LOGFILE
   
-  for x in $(find $TARGET -type f -name '*.png'); do
+  for x in $(find $TARGET -type f -name '*.png' ! -name '._*' ); do
     position=$(($position+1))
     percentdone=$(($position*100/$TOTALFILES))
     echo -ne "["$position/$TOTALFILES"] ("$percentdone "%) >> "$x
@@ -139,7 +139,7 @@ if [ -w "$TARGET" ]
 then
   conditions
 else 
-  echo -e $COL_RED"No write rights or wrong targed!"$COL_RESET
+  echo -e $COL_RED"No write rights or wrong target!"$COL_RESET
 fi
 
 exit 0
