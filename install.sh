@@ -2,12 +2,10 @@
 
 ##
 # Author: Alex Kulikov <alex.kulikov@xing.com>
-# Version: 0.2
+# Rewritten by: Koen Punt <me@koen.pt>
+# Version: 0.3
 # Description: Installer for TinyPNG.
 ##
-
-# Abort on error
-#set -e
 
 # Check the script is not being run by root
 if [ "$(id -u)" == "0" ]; then
