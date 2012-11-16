@@ -2,7 +2,7 @@
 
 ##
 # Author: Alex Kulikov <alex.kulikov@xing.com>
-# Rewritten by: Koen Punt <me@koen.pt>
+# Rewritten by:// Koen Punt <me@koen.pt>
 # Version: 0.3
 # Description: Installer for TinyPNG.
 ##
@@ -43,8 +43,8 @@ function installUtils ()
 {
   echo "Installing utilities..."
   $USE_SUDO$PKG_MANAGER update 2>&1 > /dev/null
-  $USE_SUDO$PKG_MANAGER install pngcrush advancecomp optipng 2>&1 > /dev/null
-  echo "Installed pngcrush, advancecomp and optipng"
+  $USE_SUDO$PKG_MANAGER install pngnq pngcrush advancecomp optipng 2>&1 > /dev/null
+  echo "Installed pngnq, pngcrush, advancecomp and optipng"
 }
 
 function detectArchitecture ()

@@ -71,10 +71,8 @@ function crushdir() {
 
     crunshPNG $x
 
-    let end=`ls -l pngout.png | tr -s " " | cut -d " " -f 5`
+    let end=`ls -l $x | tr -s " " | cut -d " " -f 5`
     totalend=$(($totalend+$end))
-    rm $x
-    mv pngout.png $x
     sum=$(($start-$end))
     percent=$(($sum*100/$start))
     wrongsize=$(($sum<0))
@@ -100,9 +98,7 @@ function crushfile() {
   echo "tinypng: Crush file"
   let start=`ls -l $TARGET | tr -s " " | cut -d " " -f 5`
   crunshPNG $TARGET
-  let end=`ls -l pngout.png | tr -s " " | cut -d " " -f 5`
-  rm $TARGET
-  mv pngout.png $TARGET
+  let end=`ls -l $TARGET | tr -s " " | cut -d " " -f 5`
   sum=$(($start-$end))
   percent=$(($sum*100/$start))
   echo $TARGET "Saved:" $sum "Bytes ("$percent "%)"
@@ -111,27 +107,36 @@ function crushfile() {
 }
 
 function crunshPNG() {
-  pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -max -reduce -m 0 -q $1
-  optipng -o7 -q pngout.png
-  pngout pngout.png -q -y -k0 -s0
-  advpng -z -4 pngout.png > /dev/null
+  EXTLESS=`echo $1 | sed -e 's/\.png$//'`
+  pngnq -n 256 -e '-pngnq.png' -d .tinypngtmp $1
+  pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -max -reduce -m 0 -q .tinypngtmp/$EXTLESS-pngnq.png .tinypngtmp/$EXTLESS-pngcrush.png
+  optipng -o7 -q -out .tinypngtmp/$EXTLESS-optipng.png .tinypngtmp/$EXTLESS-pngcrush.png
+  pngout -q -y -k0 -s0 .tinypngtmp/$EXTLESS-optipng.png .tinypngtmp/$EXTLESS-pngout.png
+  advpng -z -4 .tinypngtmp/$EXTLESS-pngout.png > /dev/null
+  mv .tinypngtmp/$EXTLESS-pngout.png $1
 }
 
+function cleanup() {
+  rm -rf .tinypngtmp
+}
 
 # Is target a file or a directory
 function conditions() {
+  mkdir -p .tinypngtmp
   if [ -d "$TARGET" ]
   then
     copy
     count
     crushdir
     backup
+    cleanup
   fi
   if [ -f "$TARGET" ]
   then
     copy
     crushfile
     backup
+    cleanup
   fi
 }
 
