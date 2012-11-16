@@ -1,20 +1,21 @@
 === INSTALL ===
 
 git clone git://github.com/xing/TinyPNG.git
-sudo ./install.sh
+./install.sh
 
 The installation script installs also the following programs.
 - pngcrush by Glenn Randers-Pehrson (http://pmt.sourceforge.net/pngcrush)
 - OptiPNG by Cosmin Truta (http://optipng.sourceforge.net)
 - pngout by Ken Silverman (http://advsys.net/ken/utils.htm)
 - advpng by Andrea Mazzoleni (http://advancemame.sourceforge.net/comp-readme.html)
+- pngnq by Stuart Coyle (http://pngnq.sourceforge.net/)
 
 === USAGE ===
 
 tinypng image - optimizes a single PNG
 tinypng folder - optimizes a folder of PNG's
 
-Note: TinyPNG makes a backup from the targeted files to /tmp/ on each prozess, also you will find there a logfile.
+Note: TinyPNG makes a backup from the targeted files to /tmp/ on each process, also you will find there a logfile.
 
 === LICENSE ===
 
