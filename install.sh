@@ -1,9 +1,8 @@
 #!/bin/bash
 
 ##
-# Author: Alex Kulikov <alex.kulikov@xing.com>
-# Rewritten by:// Koen Punt <me@koen.pt>
-# Version: 0.3
+# Author: Koen Punt <me@koen.pt>, Alex Kulikov <alex.kulikov@xing.com>
+# Version: 0.4
 # Description: Installer for TinyPNG.
 ##
 
@@ -43,8 +42,8 @@ function installUtils ()
 {
   echo "Installing utilities..."
   $USE_SUDO$PKG_MANAGER update 2>&1 > /dev/null
-  $USE_SUDO$PKG_MANAGER install pngnq pngcrush advancecomp optipng 2>&1 > /dev/null
-  echo "Installed pngnq, pngcrush, advancecomp and optipng"
+  $USE_SUDO$PKG_MANAGER install pngnq pngcrush advancecomp optipng imagemagick 2>&1 > /dev/null
+  echo "Installed pngnq, pngcrush, advancecomp, optipng and imagemagick"
 }
 
 function detectArchitecture ()
@@ -55,7 +54,7 @@ function detectArchitecture ()
 }
 
 function instDarwin ()
-{ 
+{
   if [ ! $PKG_MANAGER ]; then
     echo "\
 No package manager found!
@@ -65,7 +64,7 @@ You need to install one of the following
     exit 1
   else
     installUtils
-    
+
     echo "Downloading PNGOUT..."
     mkdir -p pngout
     PNGOUT_URL="http://static.jonof.id.au/dl/kenutils/pngout-${PNGOUT_VERSION}-darwin.tar.gz"
@@ -73,10 +72,10 @@ You need to install one of the following
     sudo mv pngout/pngout /usr/bin/pngout
     sudo chmod +x /usr/bin/pngout
     echo "PNGOUT installed in /usr/bin/pngout"
-    
+
     installTinyPng
     cleanup
-    
+
     echo "Done"
   fi
 }
@@ -88,13 +87,13 @@ function instLinux ()
     exit 1
   else
     installUtils
-    
+
     echo "Downloading PNGOUT..."
     mkdir -p pngout
     PNGOUT_URL="http://static.jonof.id.au/dl/kenutils/pngout-${PNGOUT_VERSION}-linux.tar.gz"
     curl -# $PNGOUT_URL | tar -xz --strip 1 --directory pngout 2>&1 > /dev/null
-    ARCHS=`find ./pngout -mindepth 1 -type d -exec basename {} \;` 
-    
+    ARCHS=`find ./pngout -mindepth 1 -type d -exec basename {} \;`
+
     if ARCH=`detectArchitecture`; then
       # If architecture is detected, check if supported
       if [[ $ARCHS != *"$ARCH"* ]]; then
@@ -130,7 +129,7 @@ function abort ()
   exit 1
 }
 
-function cleanup () 
+function cleanup ()
 {
   echo "Cleaning.."
   rm -rf pngout

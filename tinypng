@@ -2,7 +2,7 @@
 
 ##
 # Author: Alex Kulikov <alex.kulikov@xing.com>
-# Version: 0.2
+# Version: 0.3
 # Description: Automated mass optimization script for web images.
 #
 # Credits:
@@ -10,6 +10,7 @@
 # - OptiPNG by Cosmin Truta (http://optipng.sourceforge.net)
 # - pngout by Ken Silverman (http://advsys.net/ken/utils.htm)
 # - advpng by Andrea Mazzoleni (http://advancemame.sourceforge.net/comp-readme.html)
+# - Imagemagick by ImageMagick Studio LLC (http://www.imagemagick.org/script/index.php)
 ##
 
 # Global Vars
@@ -48,7 +49,7 @@ function count() {
   echo "tinypng: Count files"
   for x in $(find $TARGET -type f -name '*.png' ! -name '._*' ); do
   TOTALFILES=$(($TOTALFILES+1))
-  done  
+  done
 }
 
 #find all PNGs in folder and crush there
@@ -60,7 +61,7 @@ function crushdir() {
   position=0
   #Seperator in Logfile
   echo "====================" $DATE "====================" >> $LOGFILE
-  
+
   for x in $(find $TARGET -type f -name '*.png' ! -name '._*' ); do
     position=$(($position+1))
     percentdone=$(($position*100/$TOTALFILES))
@@ -108,6 +109,7 @@ function crushfile() {
 
 function crunshPNG() {
   EXTLESS=`echo $1 | sed -e 's/\.png$//'`
+  convert $1 -background Black -alpha Background $1
   pngnq -n 256 -e '-pngnq.png' -d .tinypngtmp $1
   pngcrush -rem gAMA -rem cHRM -rem iCCP -rem sRGB -brute -l 9 -max -reduce -m 0 -q .tinypngtmp/$EXTLESS-pngnq.png .tinypngtmp/$EXTLESS-pngcrush.png
   optipng -o7 -q -out .tinypngtmp/$EXTLESS-optipng.png .tinypngtmp/$EXTLESS-pngcrush.png
@@ -143,7 +145,7 @@ function conditions() {
 if [ -w "$TARGET" ]
 then
   conditions
-else 
+else
   echo -e $COL_RED"No write rights or wrong target!"$COL_RESET
 fi
 
