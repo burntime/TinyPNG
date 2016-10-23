@@ -27,6 +27,8 @@ elif PKG_MANAGER=$(command -v brew) > /dev/null 2>&1; then
   USE_SUDO=''
 elif PKG_MANAGER=$(command -v port) > /dev/null 2>&1; then
   USE_SUDO='sudo '
+elif PKG_MANAGER=$(command -v yum) > /dev/null 2>&1; then
+  USE_SUDO='sudo '
 fi
 
 PNGOUT_VERSION='20120530'
